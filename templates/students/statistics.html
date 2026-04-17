@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load math_filters %}
+
+{% block title %}统计报表 - 新生管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-graph-up me-2"></i>统计报表</h2>
+        <p class="text-muted">新生报到数据的多维度统计分析</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- 性别分布 -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-gender-ambiguous me-2"></i>性别分布
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <div class="mb-3">
+                            <i class="bi bi-gender-male fs-1 text-primary"></i>
+                        </div>
+                        <div class="h3 text-primary">{{ gender_stats.male }}</div>
+                        <div class="text-muted">男生</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="mb-3">
+                            <i class="bi bi-gender-female fs-1 text-danger"></i>
+                        </div>
+                        <div class="h3 text-danger">{{ gender_stats.female }}</div>
+                        <div class="text-muted">女生</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="progress" style="height: 25px;">
+                    {% with total=gender_stats.male|add:gender_stats.female %}
+                    {% if total > 0 %}
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ gender_stats.male|percentage:total }}%">
+                        男 {{ gender_stats.male }}
+                    </div>
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ gender_stats.female|percentage:total }}%">
+                        女 {{ gender_stats.female }}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 报到状态 -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-check2-square me-2"></i>报到状态分布
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col-3">
+                        <div class="h4 text-secondary">{{ status_stats.admitted }}</div>
+                        <div class="small text-muted">已录取</div>
+                    </div>
+                    <div class="col-3">
+                        <div class="h4 text-warning">{{ status_stats.pending }}</div>
+                        <div class="small text-muted">待报到</div>
+                    </div>
+                    <div class="col-3">
+                        <div class="h4 text-info">{{ status_stats.registered }}</div>
+                        <div class="small text-muted">已报到</div>
+                    </div>
+                    <div class="col-3">
+                        <div class="h4 text-success">{{ status_stats.completed }}</div>
+                        <div class="small text-muted">已完成</div>
+                    </div>
+                </div>
+                <div class="progress" style="height: 25px;">
+                    {% with total=status_stats.pending|add:status_stats.registered|add:status_stats.completed %}
+                    {% if total > 0 %}
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ status_stats.pending|percentage:total }}%">
+                    </div>
+                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ status_stats.registered|percentage:total }}%">
+                    </div>
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ status_stats.completed|percentage:total }}%">
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="d-flex justify-content-center gap-3 mt-2 small">
+                    <span><i class="bi bi-circle-fill text-warning me-1"></i>待报到</span>
+                    <span><i class="bi bi-circle-fill text-info me-1"></i>已报到</span>
+                    <span><i class="bi bi-circle-fill text-success me-1"></i>已完成</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 院系统计 -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-building me-2"></i>各院系新生分布
+            </div>
+            <div class="card-body">
+                {% if department_stats %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>排名</th>
+                                <th>院系</th>
+                                <th>新生人数</th>
+                                <th>占比</th>
+                                <th>可视化</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% with total=gender_stats.male|add:gender_stats.female %}
+                            {% for dept in department_stats %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ forloop.counter }}</span></td>
+                                <td><strong>{{ dept.department__name }}</strong></td>
+                                <td>{{ dept.count }} 人</td>
+                                <td>
+                                    {% if total > 0 %}
+                                    {{ dept.count|percentage:total }}%
+                                    {% else %}
+                                    0%
+                                    {% endif %}
+                                </td>
+                                <td style="width: 40%;">
+                                    <div class="progress" style="height: 20px;">
+                                        {% if total > 0 %}
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ dept.count|percentage:total }}%">
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endwith %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                    暂无院系统计数据
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 缴费统计 -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-cash-stack me-2"></i>缴费统计
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center border-end">
+                        <div class="text-muted mb-2">应缴总额</div>
+                        <div class="h3 text-primary">¥{{ payment_stats.total|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-md-4 text-center border-end">
+                        <div class="text-muted mb-2">已缴金额</div>
+                        <div class="h3 text-success">¥{{ payment_stats.paid|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="text-muted mb-2">未缴清人数</div>
+                        <div class="h3 {% if payment_stats.unpaid_students > 0 %}text-danger{% else %}text-success{% endif %}">
+                            {{ payment_stats.unpaid_students }} 人
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="progress" style="height: 30px;">
+                    {% if payment_stats.total > 0 %}
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ payment_stats.paid|percentage:payment_stats.total }}%">
+                        已缴 {{ payment_stats.paid|percentage:payment_stats.total }}%
+                    </div>
+                    {% else %}
+                    <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%">
+                        暂无数据
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

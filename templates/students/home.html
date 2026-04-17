@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}首页 - 新生管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>数据概览</h2>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card primary h-100">
+            <div class="card-body">
+                <div class="stat-label text-primary">新生总数</div>
+                <div class="stat-value">{{ total_students }}</div>
+                <div class="mt-2 text-muted small">
+                    <i class="bi bi-people-fill"></i> 已录入系统的学生
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card warning h-100">
+            <div class="card-body">
+                <div class="stat-label text-warning">已录取/待报到</div>
+                <div class="stat-value">{{ admitted_count|add:pending_count }}</div>
+                <div class="mt-2 text-muted small">
+                    <i class="bi bi-clock"></i> 尚未完成报到
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card info h-100">
+            <div class="card-body">
+                <div class="stat-label text-info">已报到</div>
+                <div class="stat-value">{{ registered_count }}</div>
+                <div class="mt-2 text-muted small">
+                    <i class="bi bi-check-circle"></i> 完成报到登记
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card success h-100">
+            <div class="card-body">
+                <div class="stat-label text-success">已完成</div>
+                <div class="stat-value">{{ completed_count }}</div>
+                <div class="mt-2 text-muted small">
+                    <i class="bi bi-check-all"></i> 全部手续完成
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 缴费统计 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-cash-stack me-2"></i>缴费情况
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <div class="text-muted mb-1">应缴总额</div>
+                        <div class="h4 text-primary">¥{{ total_tuition|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted mb-1">已缴金额</div>
+                        <div class="h4 text-success">¥{{ paid_tuition|floatformat:2 }}</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="progress" style="height: 20px;">
+                    {% if total_tuition > 0 %}
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {% widthratio paid_tuition total_tuition 100 %}%">
+                        {% widthratio paid_tuition total_tuition 100 %}%
+                    </div>
+                    {% else %}
+                    <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%">
+                        暂无数据
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="text-center mt-2 text-muted small">
+                    缴费完成率
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-lightning-charge me-2"></i>快捷操作
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'students:student_list' %}" class="btn btn-primary">
+                        <i class="bi bi-people me-2"></i>查看新生列表
+                    </a>
+                    <a href="{% url 'students:dormitory_list' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-building me-2"></i>宿舍管理
+                    </a>
+                    <a href="{% url 'students:statistics' %}" class="btn btn-outline-info">
+                        <i class="bi bi-graph-up me-2"></i>统计报表
+                    </a>
+                    <a href="/admin/students/student/add/" class="btn btn-outline-success" target="_blank">
+                        <i class="bi bi-plus-circle me-2"></i>添加新生
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最新新生 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2"></i>最新录入</span>
+        <a href="{% url 'students:student_list' %}" class="btn btn-sm btn-outline-primary">
+            查看全部
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>学号</th>
+                        <th>姓名</th>
+                        <th>性别</th>
+                        <th>专业</th>
+                        <th>院系</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in recent_students %}
+                    <tr>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.get_gender_display }}</td>
+                        <td>{{ student.major }}</td>
+                        <td>{{ student.department }}</td>
+                        <td>
+                            <span class="badge-status status-{{ student.status }}">
+                                {{ student.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'students:student_detail' student.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            暂无新生数据
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

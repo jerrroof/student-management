@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.name }} - 新生详情{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'students:home' %}">首页</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'students:student_list' %}">新生列表</a></li>
+                <li class="breadcrumb-item active">{{ student.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 左侧：基本信息 -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-person-vcard me-2"></i>基本信息</span>
+                <span class="badge-status status-{{ student.status }}">
+                    {{ student.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">学号</label>
+                        <p class="mb-0 fs-5"><code>{{ student.student_id }}</code></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">姓名</label>
+                        <p class="mb-0 fs-5 fw-bold">{{ student.name }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">性别</label>
+                        <p class="mb-0">{{ student.get_gender_display }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">身份证号</label>
+                        <p class="mb-0">{{ student.id_card }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">联系电话</label>
+                        <p class="mb-0"><i class="bi bi-telephone me-1"></i>{{ student.phone }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">邮箱</label>
+                        <p class="mb-0">
+                            {% if student.email %}
+                            <i class="bi bi-envelope me-1"></i>{{ student.email }}
+                            {% else %}
+                            <span class="text-muted">未填写</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-book me-2"></i>录取信息
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">院系</label>
+                        <p class="mb-0 fs-5">{{ student.department }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">专业</label>
+                        <p class="mb-0 fs-5">{{ student.major }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">入学年份</label>
+                        <p class="mb-0">{{ student.enrollment_year }} 年</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-house-door me-2"></i>宿舍信息
+            </div>
+            <div class="card-body">
+                {% if student.dormitory_building and student.dormitory_room %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">宿舍楼</label>
+                        <p class="mb-0 fs-5">{{ student.dormitory_building }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">房间号</label>
+                        <p class="mb-0 fs-5">{{ student.dormitory_room }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-house-x fs-1 d-block mb-2"></i>
+                    尚未分配宿舍
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if student.address or student.emergency_contact %}
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle me-2"></i>其他信息
+            </div>
+            <div class="card-body">
+                {% if student.address %}
+                <div class="mb-3">
+                    <label class="text-muted small">家庭地址</label>
+                    <p class="mb-0">{{ student.address }}</p>
+                </div>
+                {% endif %}
+                {% if student.emergency_contact %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">紧急联系人</label>
+                        <p class="mb-0">{{ student.emergency_contact }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">紧急联系电话</label>
+                        <p class="mb-0">{{ student.emergency_phone }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 右侧：缴费和状态 -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-cash-coin me-2"></i>缴费情况
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    {% if student.is_paid %}
+                    <div class="rounded-circle bg-success d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-check-lg text-white fs-1"></i>
+                    </div>
+                    <h5 class="text-success">已缴清</h5>
+                    {% else %}
+                    <div class="rounded-circle bg-warning d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-exclamation-lg text-white fs-1"></i>
+                    </div>
+                    <h5 class="text-warning">未缴清</h5>
+                    {% endif %}
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">应缴学费</span>
+                    <span class="fw-bold">¥{{ student.tuition_total|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">已缴金额</span>
+                    <span class="fw-bold text-success">¥{{ student.tuition_paid|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">待缴金额</span>
+                    <span class="fw-bold {% if student.tuition_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                        ¥{{ student.tuition_balance|floatformat:2 }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-calendar-check me-2"></i>报到信息
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">当前状态</label>
+                    <p class="mb-0">
+                        <span class="badge-status status-{{ student.status }}">
+                            {{ student.get_status_display }}
+                        </span>
+                    </p>
+                </div>
+                {% if student.registration_date %}
+                <div class="mb-3">
+                    <label class="text-muted small">报到时间</label>
+                    <p class="mb-0">{{ student.registration_date|date:"Y-m-d H:i" }}</p>
+                </div>
+                {% endif %}
+                <div class="mb-0">
+                    <label class="text-muted small">录入时间</label>
+                    <p class="mb-0">{{ student.created_at|date:"Y-m-d H:i" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <a href="/admin/students/student/{{ student.pk }}/change/" class="btn btn-primary" target="_blank">
+                <i class="bi bi-pencil me-2"></i>编辑信息
+            </a>
+            <a href="{% url 'students:student_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>返回列表
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

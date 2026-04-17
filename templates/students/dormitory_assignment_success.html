@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}宿舍分配成功 - 新生管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'students:home' %}">首页</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'students:dormitory_list' %}">宿舍管理</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'students:dormitory_assignment' %}">宿舍分配</a></li>
+                <li class="breadcrumb-item active">分配成功</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- 成功提示 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-success d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle-fill fs-1 me-3"></i>
+            <div>
+                <h4 class="alert-heading mb-1">宿舍分配成功！</h4>
+                <p class="mb-0">
+                    成功为 <strong>{{ assigned_count }}</strong> 名学生分配宿舍
+                    {% if failed_count > 0 %}
+                    ，<span class="text-warning">{{ failed_count }} 名学生分配失败</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-house-check fs-1"></i>
+                <h2 class="mt-2 mb-0">{{ assigned_count }}</h2>
+                <p class="mb-0">成功分配</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card {% if failed_count > 0 %}bg-warning{% else %}bg-secondary{% endif %} text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-triangle fs-1"></i>
+                <h2 class="mt-2 mb-0">{{ failed_count }}</h2>
+                <p class="mb-0">分配失败</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-gear fs-1"></i>
+                <h2 class="mt-2 mb-0">
+                    {% if strategy == 'sequential' %}顺序
+                    {% elif strategy == 'balanced' %}均衡
+                    {% elif strategy == 'by_class' %}班级
+                    {% else %}{{ strategy }}{% endif %}
+                </h2>
+                <p class="mb-0">分配策略</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 失败信息 -->
+{% if failed_students %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <i class="bi bi-exclamation-triangle me-2"></i>分配失败的学生（床位不足）
+            </div>
+            <div class="card-body">
+                <p class="mb-2">以下学生因床位不足未能分配：</p>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for name in failed_students %}
+                    <span class="badge bg-secondary">{{ name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 分配结果列表 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-house-door me-2"></i>宿舍分配结果（共 {{ students|length }} 人）</span>
+                <div>
+                    <a href="{% url 'students:dormitory_assignment' %}" class="btn btn-outline-primary btn-sm me-2">
+                        <i class="bi bi-arrow-repeat me-1"></i>继续分配
+                    </a>
+                    <a href="{% url 'students:dormitory_list' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-building me-1"></i>查看宿舍
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>学号</th>
+                                <th>姓名</th>
+                                <th>性别</th>
+                                <th>院系</th>
+                                <th>宿舍楼</th>
+                                <th>房间号</th>
+                                <th>床位号</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <a href="{% url 'students:student_detail' student.pk %}">
+                                        {{ student.student_id }}
+                                    </a>
+                                </td>
+                                <td>{{ student.name }}</td>
+                                <td>
+                                    {% if student.gender == 'M' %}
+                                    <span class="badge bg-primary">男</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">女</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ student.department.name|default:"-" }}</td>
+                                <td>
+                                    <i class="bi bi-building me-1"></i>
+                                    {{ student.dormitory.building.name }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ student.dormitory.room_number }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ student.bed_number }}号床</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    暂无数据
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 操作按钮 -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{% url 'students:dormitory_assignment' %}" class="btn btn-outline-primary btn-lg me-2">
+            <i class="bi bi-arrow-repeat me-2"></i>继续分配
+        </a>
+        <a href="{% url 'students:dormitory_list' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-building me-2"></i>查看宿舍概况
+        </a>
+    </div>
+</div>
+{% endblock %}

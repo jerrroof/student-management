@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}宿舍分配 - 新生管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-building me-2"></i>宿舍自动分配</h2>
+        <p class="text-muted">智能分配学生宿舍，支持多种分配策略</p>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card stat-card warning h-100">
+            <div class="card-body text-center">
+                <div class="stat-label text-warning">待分配学生</div>
+                <div class="stat-value">{{ unassigned_count }}</div>
+                <small class="text-muted">尚未分配宿舍的学生人数</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card stat-card success h-100">
+            <div class="card-body text-center">
+                <div class="stat-label text-success">可用房间</div>
+                <div class="stat-value">{{ available_rooms|length }}</div>
+                <small class="text-muted">有空余床位的房间数</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 分配操作 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-gear me-2"></i>自动分配
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="auto_assign">
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">分配策略</label>
+                    <select name="strategy" class="form-select">
+                        <option value="sequential">顺序分配（填满一个再下一个）</option>
+                        <option value="balanced">均衡分配（每个房间人数均衡）</option>
+                        <option value="by_class">按班级分配（同班同学在一起）</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle me-2"></i>分配说明</h6>
+                <ul class="mb-0 small">
+                    <li><strong>顺序分配</strong>：按房间顺序，填满一个房间再分配下一个</li>
+                    <li><strong>均衡分配</strong>：尽量让每个房间的入住人数均衡</li>
+                    <li><strong>按班级分配</strong>：同一班级的学生尽量分配到相邻房间</li>
+                    <li>系统会自动根据学生性别分配对应的宿舍楼</li>
+                </ul>
+            </div>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg" {% if unassigned_count == 0 %}disabled{% endif %}>
+                    <i class="bi bi-magic me-2"></i>开始自动分配
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 宿舍楼列表 -->
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-list me-2"></i>宿舍楼概况
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>楼栋名称</th>
+                        <th>类型</th>
+                        <th>房间数</th>
+                        <th>总床位</th>
+                        <th>已入住</th>
+                        <th>空余</th>
+                        <th>入住率</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for building in buildings %}
+                    <tr>
+                        <td><strong>{{ building.name }}</strong></td>
+                        <td>
+                            {% if building.gender_type == 'M' %}
+                            <span class="badge bg-primary">男生宿舍</span>
+                            {% elif building.gender_type == 'F' %}
+                            <span class="badge bg-danger">女生宿舍</span>
+                            {% else %}
+                            <span class="badge bg-secondary">混合宿舍</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ building.total_rooms }}</td>
+                        <td>{{ building.total_beds }}</td>
+                        <td>{{ building.occupied_beds }}</td>
+                        <td>{{ building.total_beds|add:building.occupied_beds|default:0 }}</td>
+                        <td>
+                            {% if building.total_beds > 0 %}
+                            <div class="progress" style="height: 20px; min-width: 100px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ building.occupied_beds|divisibleby:building.total_beds }}%">
+                                </div>
+                            </div>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            暂无宿舍楼数据，请先在后台添加
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

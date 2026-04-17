@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}学生服务{% endblock %} - 新生管理系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --dark-color: #2c3e50;
+        }
+        body { background-color: #f8f9fa; }
+        .sidebar {
+            background: linear-gradient(135deg, var(--dark-color) 0%, #34495e 100%);
+            min-height: 100vh;
+            padding: 0;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-left-color: var(--primary-color);
+        }
+        .sidebar .nav-link i { width: 25px; }
+        .user-info {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 10px;
+        }
+        .user-name { color: #fff; font-weight: 600; margin-bottom: 5px; }
+        .user-id { color: rgba(255,255,255,0.6); font-size: 0.85rem; }
+        .main-content { padding: 30px; }
+        .page-header {
+            background: #fff;
+            padding: 20px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .page-title { margin: 0; color: var(--dark-color); font-weight: 600; }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .card-header {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-submitted { background: #cce5ff; color: #004085; }
+        .status-completed, .status-approved { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <div class="col-md-3 col-lg-2 sidebar d-none d-md-block">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {% if student.photo %}
+                            <img src="{{ student.photo.url }}" alt="" class="w-100 h-100 rounded-circle">
+                        {% else %}
+                            <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
+                    <div class="user-name">{{ student.name }}</div>
+                    <div class="user-id">{{ student.student_id }}</div>
+                </div>
+                <nav class="nav flex-column py-3">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'student_profile' %}active{% endif %}" href="{% url 'students:student_profile' %}">
+                        <i class="fas fa-home"></i> 个人中心
+                    </a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'announcement_list' %}active{% endif %}" href="{% url 'students:announcement_list' %}">
+                        <i class="fas fa-bullhorn"></i> 通知公告
+                    </a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'my_registration' %}active{% endif %}" href="{% url 'students:my_registration' %}">
+                        <i class="fas fa-clipboard-check"></i> 报到进度
+                    </a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'my_documents' %}active{% endif %}" href="{% url 'students:my_documents' %}">
+                        <i class="fas fa-file-alt"></i> 我的材料
+                    </a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'my_fees' %}active{% endif %}" href="{% url 'students:my_fees' %}">
+                        <i class="fas fa-money-bill-wave"></i> 我的费用
+                    </a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'my_class' %}active{% endif %}" href="{% url 'students:my_class' %}">
+                        <i class="fas fa-users"></i> 我的班级
+                    </a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'my_dormitory' %}active{% endif %}" href="{% url 'students:my_dormitory' %}">
+                        <i class="fas fa-bed"></i> 我的宿舍
+                    </a>
+                    <hr class="my-2" style="border-color: rgba(255,255,255,0.2);">
+                    <a class="nav-link" href="{% url 'students:change_password' %}">
+                        <i class="fas fa-key"></i> 修改密码
+                    </a>
+                    <a class="nav-link" href="{% url 'students:student_logout' %}">
+                        <i class="fas fa-sign-out-alt"></i> 退出登录
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- 主内容区 -->
+            <div class="col-md-9 col-lg-10 ms-auto main-content">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

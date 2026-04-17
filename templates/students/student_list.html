@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}新生列表 - 新生管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-people me-2"></i>新生管理</h2>
+        <p class="text-muted">管理所有新生的基本信息、报到状态和缴费情况</p>
+    </div>
+</div>
+
+<!-- 筛选和搜索 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="搜索学号、姓名或电话" value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">所有状态</option>
+                    <option value="admitted" {% if status == 'admitted' %}selected{% endif %}>已录取</option>
+                    <option value="pending" {% if status == 'pending' %}selected{% endif %}>待报到</option>
+                    <option value="registered" {% if status == 'registered' %}selected{% endif %}>已报到</option>
+                    <option value="completed" {% if status == 'completed' %}selected{% endif %}>已完成</option>
+                    <option value="deferred" {% if status == 'deferred' %}selected{% endif %}>保留学籍</option>
+                    <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>取消入学</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="department" class="form-select">
+                    <option value="">所有院系</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if department_id == dept.id|stringformat:'s' %}selected{% endif %}>{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">筛选</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 新生列表 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-list me-2"></i>新生列表</span>
+        <div class="btn-group">
+            <a href="{% url 'students:export_students' %}?status={{ status }}&department={{ department_id }}" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-download me-1"></i>导出Excel
+            </a>
+            <a href="{% url 'students:import_students' %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-upload me-1"></i>导入
+            </a>
+            <a href="/admin/students/student/add/" class="btn btn-sm btn-success" target="_blank">
+                <i class="bi bi-plus-lg me-1"></i>添加新生
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>学号</th>
+                        <th>姓名</th>
+                        <th>性别</th>
+                        <th>专业</th>
+                        <th>院系</th>
+                        <th>联系电话</th>
+                        <th>状态</th>
+                        <th>缴费</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in page_obj %}
+                    <tr>
+                        <td><code>{{ student.student_id }}</code></td>
+                        <td><strong>{{ student.name }}</strong></td>
+                        <td>{{ student.get_gender_display }}</td>
+                        <td>{{ student.major }}</td>
+                        <td><span class="badge bg-light text-dark">{{ student.department }}</span></td>
+                        <td>{{ student.phone }}</td>
+                        <td>
+                            <span class="badge-status status-{{ student.status }}">
+                                {{ student.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if student.is_paid %}
+                            <span class="badge bg-success">已缴清</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">未缴清</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'students:student_detail' student.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                            <p>暂无新生数据</p>
+                            <a href="/admin/students/student/add/" class="btn btn-primary" target="_blank">
+                                <i class="bi bi-plus-lg me-2"></i>添加第一个新生
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- 分页 -->
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if department %}&department={{ department }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if department %}&department={{ department }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if department %}&department={{ department }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

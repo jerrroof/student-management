@@ -1,0 +1,100 @@
+{% extends 'students/student_base.html' %}
+{% block title %}报到进度{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h4 class="page-title"><i class="fas fa-clipboard-check me-2"></i>报到进度</h4>
+    <div>
+        <span class="badge bg-primary fs-6">完成度: {{ progress_percent }}%</span>
+    </div>
+</div>
+
+<!-- 进度条 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress_percent }}%">
+                {{ completed_tasks }}/{{ total_tasks }} 个环节
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 报到环节列表 -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="timeline p-4">
+            {% for item in progress_list %}
+            <div class="timeline-item mb-4 {% if not forloop.last %}pb-4 border-bottom{% endif %}">
+                <div class="d-flex">
+                    <div class="timeline-icon me-3">
+                        {% if item.status == 'completed' %}
+                            <span class="badge rounded-circle bg-success p-2">
+                                <i class="fas fa-check"></i>
+                            </span>
+                        {% elif item.status == 'skipped' %}
+                            <span class="badge rounded-circle bg-secondary p-2">
+                                <i class="fas fa-forward"></i>
+                            </span>
+                        {% else %}
+                            <span class="badge rounded-circle bg-warning p-2">
+                                <i class="fas fa-clock"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    {{ forloop.counter }}. {{ item.task.name }}
+                                    {% if item.task.is_required %}
+                                        <span class="badge bg-danger ms-1">必须</span>
+                                    {% endif %}
+                                </h6>
+                                {% if item.task.description %}
+                                    <p class="text-muted small mb-1">{{ item.task.description }}</p>
+                                {% endif %}
+                                {% if item.task.location %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i>{{ item.task.location }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                {% if item.status == 'completed' %}
+                                    <span class="status-badge status-completed">已完成</span>
+                                    {% if item.completed_at %}
+                                        <br><small class="text-muted">{{ item.completed_at|date:"m-d H:i" }}</small>
+                                    {% endif %}
+                                {% elif item.status == 'skipped' %}
+                                    <span class="status-badge status-pending">已跳过</span>
+                                {% else %}
+                                    <span class="status-badge status-pending">待办理</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                <p>暂无报到环节</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline-icon .badge {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}导入学生数据 - 新生管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'students:home' %}">首页</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'students:student_list' %}">新生列表</a></li>
+                <li class="breadcrumb-item active">导入数据</li>
+            </ol>
+        </nav>
+        <h2><i class="bi bi-file-earmark-excel me-2"></i>Excel 批量导入</h2>
+        <p class="text-muted">通过 Excel 文件批量导入新生数据</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-upload me-2"></i>上传文件
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="importForm">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label">选择 Excel 文件</label>
+                        <input type="file" class="form-control form-control-lg" name="file" accept=".xlsx,.xls" required>
+                        <div class="form-text">支持 .xlsx 和 .xls 格式</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle me-2"></i>导入说明</h6>
+                        <ul class="mb-0 small">
+                            <li>请先下载模板，按照模板格式填写数据</li>
+                            <li><strong>必填字段</strong>：学号、姓名、身份证号、手机号</li>
+                            <li>性别请填写 "男" 或 "女"</li>
+                            <li>院系代码和专业代码需与系统中已有数据一致</li>
+                            <li>出生日期格式：YYYY-MM-DD</li>
+                            <li>重复的学号或身份证号将被跳过</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-upload me-2"></i>开始导入
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-download me-2"></i>下载模板
+            </div>
+            <div class="card-body">
+                <p class="text-muted">下载标准导入模板，按格式填写数据后再上传</p>
+                <a href="{% url 'students:download_import_template' %}" class="btn btn-outline-success w-100">
+                    <i class="bi bi-file-earmark-arrow-down me-2"></i>下载导入模板
+                </a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-question-circle me-2"></i>字段说明
+            </div>
+            <div class="card-body">
+                <table class="table table-sm small">
+                    <thead>
+                        <tr>
+                            <th>字段名</th>
+                            <th>必填</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>学号</td><td><span class="badge bg-danger">是</span></td><td>唯一标识</td></tr>
+                        <tr><td>姓名</td><td><span class="badge bg-danger">是</span></td><td>学生姓名</td></tr>
+                        <tr><td>性别</td><td><span class="badge bg-secondary">否</span></td><td>男/女</td></tr>
+                        <tr><td>身份证号</td><td><span class="badge bg-danger">是</span></td><td>18位</td></tr>
+                        <tr><td>手机号</td><td><span class="badge bg-danger">是</span></td><td>11位</td></tr>
+                        <tr><td>院系代码</td><td><span class="badge bg-secondary">否</span></td><td>系统中的代码</td></tr>
+                        <tr><td>专业代码</td><td><span class="badge bg-secondary">否</span></td><td>系统中的代码</td></tr>
+                        <tr><td>入学年份</td><td><span class="badge bg-secondary">否</span></td><td>如 2026</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

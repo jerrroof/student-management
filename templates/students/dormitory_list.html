@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load math_filters %}
+
+{% block title %}宿舍管理 - 新生管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-building me-2"></i>宿舍管理</h2>
+        <p class="text-muted">管理宿舍楼栋和房间分配情况</p>
+    </div>
+</div>
+
+<!-- 统计概览 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card primary h-100">
+            <div class="card-body text-center">
+                <div class="stat-label text-primary">宿舍楼数</div>
+                <div class="stat-value">{{ total_buildings }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card info h-100">
+            <div class="card-body text-center">
+                <div class="stat-label text-info">房间数/床位数</div>
+                <div class="stat-value">{{ total_rooms }}/{{ total_capacity }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success h-100">
+            <div class="card-body text-center">
+                <div class="stat-label text-success">已入住</div>
+                <div class="stat-value">{{ total_occupied }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning h-100">
+            <div class="card-body text-center">
+                <div class="stat-label text-warning">空余床位</div>
+                <div class="stat-value">{{ available_beds }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 入住率图表 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-bar-chart me-2"></i>入住率概览
+    </div>
+    <div class="card-body">
+        <div class="progress" style="height: 30px;">
+            {% if total_capacity > 0 %}
+            {% with rate=total_occupied|percentage:total_capacity %}
+            <div class="progress-bar bg-success" role="progressbar" 
+                 style="width: {{ rate }}%">
+                已入住 {{ total_occupied }}/{{ total_capacity }}
+            </div>
+            {% endwith %}
+            {% else %}
+            <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%">
+                暂无数据
+            </div>
+            {% endif %}
+        </div>
+        <div class="row mt-3 text-center">
+            <div class="col-4">
+                <div class="text-muted small">入住率</div>
+                <div class="h5">
+                    {% if total_capacity > 0 %}
+                    {{ total_occupied|percentage:total_capacity }}%
+                    {% else %}
+                    0%
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="text-muted small">空余率</div>
+                <div class="h5">
+                    {% if total_capacity > 0 %}
+                    {{ available_beds|percentage:total_capacity }}%
+                    {% else %}
+                    0%
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="text-muted small">宿舍楼数</div>
+                <div class="h5 text-primary">
+                    {{ total_buildings }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 宿舍列表 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-list me-2"></i>宿舍房间列表</span>
+        <a href="/admin/students/dormitoryroom/add/" class="btn btn-sm btn-success" target="_blank">
+            <i class="bi bi-plus-lg me-1"></i>添加房间
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>楼栋</th>
+                        <th>房间号</th>
+                        <th>楼层</th>
+                        <th>类型</th>
+                        <th>容量</th>
+                        <th>已入住</th>
+                        <th>空余</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for room in rooms %}
+                    <tr>
+                        <td><span class="badge bg-primary">{{ room.building.name }}</span></td>
+                        <td><strong>{{ room.room_number }}</strong></td>
+                        <td>{{ room.floor }} 楼</td>
+                        <td>{{ room.get_room_type_display }}</td>
+                        <td>{{ room.capacity }} 人</td>
+                        <td>{{ room.current_occupancy }} 人</td>
+                        <td>{{ room.available_beds }} 人</td>
+                        <td>
+                            {% if room.is_full %}
+                            <span class="badge bg-danger">已满</span>
+                            {% else %}
+                            <span class="badge bg-success">可入住</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-building-x fs-1 d-block mb-3"></i>
+                            <p>暂无宿舍数据</p>
+                            <a href="/admin/students/dormitorybuilding/add/" class="btn btn-primary" target="_blank">
+                                <i class="bi bi-plus-lg me-2"></i>添加宿舍楼
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

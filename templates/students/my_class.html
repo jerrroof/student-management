@@ -1,0 +1,103 @@
+{% extends 'students/student_base.html' %}
+{% block title %}我的班级{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h4 class="page-title"><i class="fas fa-users me-2"></i>我的班级</h4>
+</div>
+
+{% if student_class %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-info-circle me-2"></i>班级信息
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <th width="100">班级名称</th>
+                        <td>{{ student_class.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>班级代码</th>
+                        <td>{{ student_class.code }}</td>
+                    </tr>
+                    <tr>
+                        <th>所属专业</th>
+                        <td>{{ student_class.major.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>入学年份</th>
+                        <td>{{ student_class.enrollment_year }}</td>
+                    </tr>
+                    {% if student_class.counselor %}
+                    <tr>
+                        <th>辅导员</th>
+                        <td>
+                            {{ student_class.counselor }}
+                            {% if student_class.counselor_phone %}
+                                <br><small class="text-muted">{{ student_class.counselor_phone }}</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if student_class.classroom %}
+                    <tr>
+                        <th>班级教室</th>
+                        <td>{{ student_class.classroom }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-user-friends me-2"></i>同班同学</span>
+                <span class="badge bg-primary">{{ classmates|length }} 人</span>
+            </div>
+            <div class="card-body p-0">
+                {% if classmates %}
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>学号</th>
+                            <th>姓名</th>
+                            <th>性别</th>
+                            <th>宿舍</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mate in classmates %}
+                        <tr>
+                            <td>{{ mate.student_id }}</td>
+                            <td>{{ mate.name }}</td>
+                            <td>{{ mate.get_gender_display }}</td>
+                            <td>{{ mate.dormitory|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-users fa-3x mb-3"></i>
+                    <p>暂无同班同学信息</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-users fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted">您尚未分配班级</h5>
+        <p class="text-muted">请等待学校完成分班安排</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+
+{% block title %}个人中心 - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 欢迎头部 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">
+                            <i class="fas fa-user-circle me-2"></i>
+                            欢迎您，{{ student.name }}
+                        </h4>
+                        <p class="mb-0 opacity-75">
+                            学号：{{ student.student_id }} | 
+                            {{ student.department.name|default:"未分配院系" }} - {{ student.major.name|default:"未分配专业" }}
+                        </p>
+                    </div>
+                    <div>
+                        <a href="{% url 'students:change_password' %}" class="btn btn-light btn-sm me-2">
+                            <i class="fas fa-key me-1"></i>修改密码
+                        </a>
+                        <a href="{% url 'students:student_logout' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-sign-out-alt me-1"></i>退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快捷导航 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-3">
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                        <a href="{% url 'students:announcement_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-bullhorn me-1"></i>通知公告
+                        </a>
+                        <a href="{% url 'students:my_registration' %}" class="btn btn-outline-success">
+                            <i class="fas fa-clipboard-check me-1"></i>报到进度
+                        </a>
+                        <a href="{% url 'students:my_documents' %}" class="btn btn-outline-info">
+                            <i class="fas fa-file-alt me-1"></i>我的材料
+                        </a>
+                        <a href="{% url 'students:my_fees' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-money-bill-wave me-1"></i>我的费用
+                        </a>
+                        <a href="{% url 'students:my_class' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-users me-1"></i>我的班级
+                        </a>
+                        <a href="{% url 'students:my_dormitory' %}" class="btn btn-outline-danger">
+                            <i class="fas fa-bed me-1"></i>我的宿舍
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 左侧：个人信息 -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>基本信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if student.photo %}
+                            <img src="{{ student.photo.url }}" class="rounded-circle" 
+                                 style="width: 120px; height: 120px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center"
+                                 style="width: 120px; height: 120px;">
+                                <i class="fas fa-user fa-4x text-white"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <table class="table table-borderless">
+                        <tr>
+                            <th class="text-muted" style="width: 100px;">姓名</th>
+                            <td>{{ student.name }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">性别</th>
+                            <td>{{ student.get_gender_display }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">民族</th>
+                            <td>{{ student.ethnicity }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">出生日期</th>
+                            <td>{{ student.birthday|date:"Y年m月d日"|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">政治面貌</th>
+                            <td>{{ student.get_political_status_display }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">手机号</th>
+                            <td>{{ student.phone }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">邮箱</th>
+                            <td>{{ student.email|default:"-" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 宿舍信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bed me-2"></i>宿舍信息</h5>
+                </div>
+                <div class="card-body">
+                    {% if student.dormitory %}
+                        <p class="mb-2"><strong>宿舍楼：</strong>{{ student.dormitory.building.name }}</p>
+                        <p class="mb-2"><strong>房间号：</strong>{{ student.dormitory.room_number }}</p>
+                        <p class="mb-2"><strong>床位号：</strong>{{ student.bed_number|default:"待分配" }}</p>
+                        <p class="mb-0"><strong>住宿费：</strong>¥{{ student.dormitory.fee_per_year }}/年</p>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-info-circle fa-2x mb-2"></i>
+                            <p class="mb-0">宿舍尚未分配</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧内容 -->
+        <div class="col-md-8">
+            <!-- 报到进度 -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>报到进度</h5>
+                    <span class="badge bg-primary fs-6">{{ registration_progress }}%</span>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ registration_progress }}%">
+                            {{ registration_progress }}%
+                        </div>
+                    </div>
+                    
+                    {% if registration_records %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>序号</th>
+                                        <th>环节名称</th>
+                                        <th>办理地点</th>
+                                        <th>状态</th>
+                                        <th>完成时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in registration_records %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ record.task.name }}</td>
+                                        <td>{{ record.task.location|default:"-" }}</td>
+                                        <td>
+                                            {% if record.status == 'completed' %}
+                                                <span class="badge bg-success">已完成</span>
+                                            {% elif record.status == 'skipped' %}
+                                                <span class="badge bg-secondary">已跳过</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">待办理</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ record.completed_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                            <p class="mb-0">暂无报到环节记录</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 缴费信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>缴费信息</h5>
+                </div>
+                <div class="card-body">
+                    <!-- 缴费概览 -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 text-center">
+                                <div class="text-muted mb-1">应缴总额</div>
+                                <div class="fs-4 fw-bold text-primary">¥{{ total_fee|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 text-center">
+                                <div class="text-muted mb-1">已缴金额</div>
+                                <div class="fs-4 fw-bold text-success">¥{{ paid_fee|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 text-center">
+                                <div class="text-muted mb-1">待缴金额</div>
+                                <div class="fs-4 fw-bold {% if fee_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    ¥{{ fee_balance|floatformat:2 }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 收费项目 -->
+                    {% if fee_items %}
+                        <h6 class="mb-3">收费项目</h6>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>费用名称</th>
+                                        <th>费用类型</th>
+                                        <th>金额</th>
+                                        <th>是否必缴</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for fee in fee_items %}
+                                    <tr>
+                                        <td>{{ fee.name }}</td>
+                                        <td>{{ fee.get_fee_type_display }}</td>
+                                        <td>¥{{ fee.amount|floatformat:2 }}</td>
+                                        <td>
+                                            {% if fee.is_required %}
+                                                <span class="badge bg-danger">必缴</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">选缴</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+
+                    <!-- 缴费记录 -->
+                    {% if payments %}
+                        <h6 class="mb-3">缴费记录</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>缴费单号</th>
+                                        <th>缴费金额</th>
+                                        <th>支付方式</th>
+                                        <th>缴费时间</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in payments %}
+                                    <tr>
+                                        <td>{{ payment.payment_no }}</td>
+                                        <td>¥{{ payment.amount|floatformat:2 }}</td>
+                                        <td>{{ payment.get_payment_method_display }}</td>
+                                        <td>{{ payment.payment_time|date:"Y-m-d H:i" }}</td>
+                                        <td>
+                                            {% if payment.status == 'confirmed' %}
+                                                <span class="badge bg-success">已确认</span>
+                                            {% elif payment.status == 'pending' %}
+                                                <span class="badge bg-warning">待确认</span>
+                                            {% elif payment.status == 'rejected' %}
+                                                <span class="badge bg-danger">已退回</span>
+                                            {% else %}
+                                                <span class="badge bg-info">已退款</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <p class="mb-0">暂无缴费记录</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 紧急联系人 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-phone-alt me-2"></i>紧急联系人</h5>
+                </div>
+                <div class="card-body">
+                    {% if student.emergency_contact %}
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>联系人：</strong>{{ student.emergency_contact }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>关系：</strong>{{ student.emergency_relation|default:"-" }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>电话：</strong>{{ student.emergency_phone|default:"-" }}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0 text-center">暂无紧急联系人信息</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

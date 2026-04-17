@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}统计图表 - 新生管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-bar-chart me-2"></i>统计图表</h2>
+        <p class="text-muted">可视化数据分析与报表</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- 性别分布 -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-pie-chart me-2"></i>性别分布
+            </div>
+            <div class="card-body">
+                {{ gender_chart|safe }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 报到状态 -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-pie-chart me-2"></i>报到状态分布
+            </div>
+            <div class="card-body">
+                {{ status_chart|safe }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 院系人数 -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-bar-chart me-2"></i>各院系新生人数
+            </div>
+            <div class="card-body">
+                {{ department_chart|safe }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 报到趋势 -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-graph-up me-2"></i>报到趋势
+            </div>
+            <div class="card-body">
+                {{ registration_trend_chart|safe }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 宿舍入住 -->
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-building me-2"></i>宿舍入住情况
+            </div>
+            <div class="card-body">
+                {{ dormitory_chart|safe }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 缴费率 -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-cash me-2"></i>缴费完成率
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                {{ payment_chart|safe }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

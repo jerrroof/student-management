@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*.pyc
+venv/
+.env
+staticfiles/
+*.zip
+generate_*.py
+50_students_import.xlsx
+students_batch*.xlsx

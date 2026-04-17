@@ -1,0 +1,142 @@
+{% extends 'students/student_base.html' %}
+{% block title %}我的费用{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h4 class="page-title"><i class="fas fa-money-bill-wave me-2"></i>我的费用</h4>
+</div>
+
+<!-- 费用概览 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h6 class="card-title opacity-75">应缴金额</h6>
+                <h3 class="mb-0">¥{{ total_fee|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title opacity-75">已缴金额</h6>
+                <h3 class="mb-0">¥{{ paid_fee|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card {% if balance > 0 %}bg-warning{% else %}bg-secondary{% endif %} text-white">
+            <div class="card-body">
+                <h6 class="card-title opacity-75">待缴金额</h6>
+                <h3 class="mb-0">¥{{ balance|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 收费项目 -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-file-invoice-dollar me-2"></i>收费项目
+            </div>
+            <div class="card-body p-0">
+                {% if fee_items %}
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>项目</th>
+                            <th>类型</th>
+                            <th class="text-end">金额</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in fee_items %}
+                        <tr>
+                            <td>
+                                {{ item.name }}
+                                {% if item.is_required %}
+                                    <span class="badge bg-danger ms-1">必缴</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.get_fee_type_display }}</td>
+                            <td class="text-end">¥{{ item.amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="2">合计</th>
+                            <th class="text-end">¥{{ total_fee|floatformat:2 }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-file-invoice fa-3x mb-3"></i>
+                    <p>暂无收费项目</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 缴费记录 -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-receipt me-2"></i>缴费记录
+            </div>
+            <div class="card-body p-0">
+                {% if payments %}
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>缴费单号</th>
+                            <th>金额</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>
+                                <small>{{ payment.payment_no }}</small>
+                                <br><small class="text-muted">{{ payment.payment_time|date:"Y-m-d H:i" }}</small>
+                            </td>
+                            <td>
+                                ¥{{ payment.amount|floatformat:2 }}
+                                <br><small class="text-muted">{{ payment.get_payment_method_display }}</small>
+                            </td>
+                            <td>
+                                {% if payment.status == 'confirmed' %}
+                                    <span class="status-badge status-completed">已确认</span>
+                                {% elif payment.status == 'pending' %}
+                                    <span class="status-badge status-pending">待确认</span>
+                                {% elif payment.status == 'rejected' %}
+                                    <span class="status-badge status-rejected">已退回</span>
+                                {% else %}
+                                    <span class="status-badge status-submitted">已退款</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-receipt fa-3x mb-3"></i>
+                    <p>暂无缴费记录</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>
+    如有缴费问题，请联系财务处或辅导员。
+</div>
+{% endblock %}
